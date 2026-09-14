@@ -562,23 +562,42 @@
     </div>
   </div>
 
-  <!-- SCRIPT LOGIC -->
-  <script>
-    let bankAccountsList = JSON.parse(localStorage.getItem('biz_banks')) || ['sampath', 'peoples', 'lolc', 'lb', 'ez cash', 'dialog', 'cash', 'commercial'];
-    let bettingAccountsList = JSON.parse(localStorage.getItem('biz_betting')) || ['1xbet', '888', 'db bet', 'melbet', 'web', 'megapari', 'bet365'];
+  <!-- SCRIPT LOGIC (FIREBASE SYNC INTEGRATED) -->
+  <script type="module">
+    // 1. Firebase Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+    // 2. Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtbcTKKyTFp9EKIu6brtZRit-0tuGeUq0",
+      authDomain: "basinasdana.firebaseapp.com",
+      projectId: "basinasdana",
+      storageBucket: "basinasdana.firebasestorage.app",
+      messagingSenderId: "366740634554",
+      appId: "1:366740634554:web:f972f6a9b8e91cecb73b83",
+      measurementId: "G-F0ZDRL1BW7"
+    };
+
+    // 3. Initialize Firebase & Firestore
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    // අපි සම්පූර්ණ දත්ත එකතූව එක Document එකක Save කරනවා
+    const docRef = doc(db, "businessData", "mainLedger");
+
+    let bankAccountsList = ['sampath', 'peoples', 'lolc', 'lb', 'ez cash', 'dialog', 'cash', 'commercial'];
+    let bettingAccountsList = ['1xbet', '888', 'db bet', 'melbet', 'web', 'megapari', 'bet365'];
 
     const SAMPLE_RECORDS = [
       { id: 101, date: '2026-09-14 09:15', mode: 'deposit', name: 'Sunil Perera (0771234567)', from: 'sampath', toArr: [{ site: '1xbet', amount: 50000 }], status: 'Yes', note: 'Morning slip confirmed' },
       { id: 102, date: '2026-09-14 10:30', mode: 'withdrawal', name: 'Nimal Bandara', from: '888', toArr: [{ site: 'peoples', amount: 35000 }], status: 'Pending Withdrawal', note: 'Queued for 12 PM transfer' },
       { id: 103, date: '2026-09-14 11:00', mode: 'deposit', name: 'Kamal Silva (0719876543)', from: 'lb', toArr: [{ site: 'db bet', amount: 20000 }], status: 'Nayata', note: 'To settle tonight' }
     ];
-
     const SAMPLE_CONTACTS = [
       { id: 1, name: 'Sunil Perera', phone: '0771234567', note: 'Frequent Deposit', createdAt: '2026-09-14' },
       { id: 2, name: 'Nimal Bandara', phone: '0754433221', note: '888 Player', createdAt: '2026-09-14' },
       { id: 3, name: 'Kamal Silva', phone: '0719876543', note: 'VIP Regular', createdAt: '2026-09-14' }
     ];
-
     const SAMPLE_BALANCES = {
       'sampath': '150000', 'peoples': '85000', 'lolc': '40000', 'lb': '25000', 'ez cash': '15000', 'dialog': '10000', 'cash': '50000',
       '1xbet': '250000', '888': '180000', 'db bet': '95000', 'melbet': '60000', 'web': '30000', 'mulu naya': '45000'
@@ -586,16 +605,59 @@
 
     let currentUser = localStorage.getItem('biz_user') || 'Dana';
     let currentMode = 'deposit';
-    let records = JSON.parse(localStorage.getItem('biz_records') || 'null') || SAMPLE_RECORDS;
-    let contacts = JSON.parse(localStorage.getItem('biz_contacts') || 'null') || SAMPLE_CONTACTS;
-    let manualBalances = JSON.parse(localStorage.getItem('biz_manual_bal') || 'null') || SAMPLE_BALANCES;
-    let checkpointBalance = parseFloat(localStorage.getItem('biz_checkpoint_bal') || '915000');
+    
+    // State variables (Will be overriden by Firebase)
+    let records = [];
+    let contacts = [];
+    let manualBalances = {};
+    let checkpointBalance = 915000;
     let allAccounts = [...bankAccountsList, ...bettingAccountsList];
 
     let currentStatusModalType = null;
     let currentAccountModalTarget = null;
     let editingRecordId = null;
     let editingContactId = null;
+    let isDataLoaded = false;
+
+    // 4. Listen to Firebase Real-time Updates (PC & Phone Sync)
+    onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        bankAccountsList = data.banks || ['sampath', 'peoples', 'lolc', 'lb', 'ez cash', 'dialog', 'cash', 'commercial'];
+        bettingAccountsList = data.betting || ['1xbet', '888', 'db bet', 'melbet', 'web', 'megapari', 'bet365'];
+        records = data.records || [];
+        contacts = data.contacts || [];
+        manualBalances = data.manualBalances || {};
+        checkpointBalance = data.checkpointBalance || 0;
+        allAccounts = [...bankAccountsList, ...bettingAccountsList];
+
+        isDataLoaded = true;
+        if (currentUser) {
+          updateAllCalculations();
+          renderQuickButtons();
+        }
+      } else {
+        // First run on Firebase: Upload dummy data
+        records = SAMPLE_RECORDS;
+        contacts = SAMPLE_CONTACTS;
+        manualBalances = SAMPLE_BALANCES;
+        checkpointBalance = 915000;
+        isDataLoaded = true;
+        saveToFirebase();
+      }
+    });
+
+    // 5. Function to Save Data to Firebase
+    function saveToFirebase() {
+      setDoc(docRef, {
+        banks: bankAccountsList,
+        betting: bettingAccountsList,
+        records: records,
+        contacts: contacts,
+        manualBalances: manualBalances,
+        checkpointBalance: checkpointBalance
+      }).catch(err => console.error("Firebase Save Error: ", err));
+    }
 
     function formatLKR(num) {
       return (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' LKR';
@@ -758,7 +820,6 @@
           createdAt: new Date().toISOString().split('T')[0]
         };
         contacts.unshift(newContact);
-        localStorage.setItem('biz_contacts', JSON.stringify(contacts));
       }
 
       const now = new Date();
@@ -782,7 +843,8 @@
         alert('Record Saved Successfully! (සේව් කිරීම සාර්ථකයි)');
       }
       
-      localStorage.setItem('biz_records', JSON.stringify(records));
+      // Trigger Firebase Sync
+      saveToFirebase();
 
       document.getElementById('entry-name').value = '';
       document.getElementById('entry-from').value = '';
@@ -791,8 +853,6 @@
         document.getElementById('entry-to-' + i).value = '';
         document.getElementById('entry-lkr-' + i).value = '';
       }
-
-      updateAllCalculations();
     }
 
     function editRecord(id) {
@@ -894,7 +954,6 @@
       const typeStr = type === 'bank' ? 'Bank' : 'Betting Site';
       let inputName = prompt(`Enter new ${typeStr} name:`);
       
-      // Prevent errors if user clicks cancel on the prompt
       if (!inputName) return; 
       
       const accName = inputName.trim().toLowerCase();
@@ -902,28 +961,22 @@
 
       if (type === 'bank') {
         if (!bankAccountsList.includes(accName)) bankAccountsList.push(accName);
-        localStorage.setItem('biz_banks', JSON.stringify(bankAccountsList));
       } else {
         if (!bettingAccountsList.includes(accName)) bettingAccountsList.push(accName);
-        localStorage.setItem('biz_betting', JSON.stringify(bettingAccountsList));
       }
       allAccounts = [...bankAccountsList, ...bettingAccountsList];
-      updateAllCalculations();
-      renderQuickButtons();
+      saveToFirebase(); // Firebase Sync
     }
 
     function removeAccount(acc, type) {
       if (confirm(`Remove '${acc}' card from the balance sheet? (Transactions will remain in the database)`)) {
         if (type === 'bank') {
           bankAccountsList = bankAccountsList.filter(a => a !== acc);
-          localStorage.setItem('biz_banks', JSON.stringify(bankAccountsList));
         } else {
           bettingAccountsList = bettingAccountsList.filter(a => a !== acc);
-          localStorage.setItem('biz_betting', JSON.stringify(bettingAccountsList));
         }
         allAccounts = [...bankAccountsList, ...bettingAccountsList];
-        updateAllCalculations();
-        renderQuickButtons();
+        saveToFirebase(); // Firebase Sync
       }
     }
 
@@ -956,7 +1009,6 @@
         bVar.className = 'text-lg sm:text-xl font-extrabold text-rose-400';
       }
 
-      // Banks Cards - Added safe escaping so clicking cards with spaces/quotes works correctly
       document.getElementById('banks-cards-grid').innerHTML = data.bankAccs.map(acc => {
         const bal = data.accountTotals[acc] || 0;
         const isPos = bal >= 0;
@@ -983,7 +1035,6 @@
         `;
       }).join('');
 
-      // Betting Cards - Added safe escaping so clicking cards with spaces/quotes works correctly
       document.getElementById('betting-cards-grid').innerHTML = data.bettingAccs.map(acc => {
         const bal = data.accountTotals[acc] || 0;
         const isPos = bal >= 0;
@@ -1089,8 +1140,7 @@
     function deleteRecordDirect(id) {
       if (confirm('Delete this transaction record?')) {
         records = records.filter(r => r.id !== id);
-        localStorage.setItem('biz_records', JSON.stringify(records));
-        updateAllCalculations();
+        saveToFirebase(); // Firebase Sync
         if (currentAccountModalTarget && !document.getElementById('account-details-modal').classList.contains('hidden')) {
           openAccountDetails(currentAccountModalTarget);
         }
@@ -1161,8 +1211,7 @@
       const rec = records.find(r => r.id === id);
       if (rec) {
         rec.status = 'Yes';
-        localStorage.setItem('biz_records', JSON.stringify(records));
-        updateAllCalculations();
+        saveToFirebase(); // Firebase Sync
         if (currentStatusModalType) openStatusDetails(currentStatusModalType);
       }
     }
@@ -1254,16 +1303,14 @@
         });
       }
       
-      localStorage.setItem('biz_contacts', JSON.stringify(contacts));
+      saveToFirebase(); // Firebase Sync
       closeAddContactModal();
-      renderContacts();
     }
 
     function deleteContact(id) {
       if (confirm('Delete this contact?')) {
         contacts = contacts.filter(c => c.id !== id);
-        localStorage.setItem('biz_contacts', JSON.stringify(contacts));
-        renderContacts();
+        saveToFirebase(); // Firebase Sync
       }
     }
 
@@ -1329,22 +1376,19 @@
 
     function updateAccountManualBal(acc, val) {
       manualBalances[acc.toLowerCase()] = val;
-      localStorage.setItem('biz_manual_bal', JSON.stringify(manualBalances));
-      updateAllCalculations();
+      saveToFirebase(); // Firebase Sync
     }
 
     function updateManualNaya(val) {
       manualBalances['mulu naya'] = val;
-      localStorage.setItem('biz_manual_bal', JSON.stringify(manualBalances));
-      updateAllCalculations();
+      saveToFirebase(); // Firebase Sync
     }
 
     function saveCheckpoint() {
       const val = parseFloat(document.getElementById('checkpoint-input').value) || 0;
       checkpointBalance = val;
-      localStorage.setItem('biz_checkpoint_bal', val.toString());
+      saveToFirebase(); // Firebase Sync
       alert('Manual System Cash Checkpoint Updated!');
-      updateAllCalculations();
     }
 
     function resetData() {
@@ -1357,15 +1401,8 @@
         bettingAccountsList = ['1xbet', '888', 'db bet', 'melbet', 'web', 'megapari', 'bet365'];
         allAccounts = [...bankAccountsList, ...bettingAccountsList];
 
-        localStorage.setItem('biz_records', JSON.stringify(records));
-        localStorage.setItem('biz_contacts', JSON.stringify(contacts));
-        localStorage.setItem('biz_manual_bal', JSON.stringify(manualBalances));
-        localStorage.setItem('biz_checkpoint_bal', checkpointBalance.toString());
-        localStorage.setItem('biz_banks', JSON.stringify(bankAccountsList));
-        localStorage.setItem('biz_betting', JSON.stringify(bettingAccountsList));
+        saveToFirebase(); // Firebase Sync overrides the entire document with demo data
 
-        updateAllCalculations();
-        renderQuickButtons();
         alert('Reset Complete!');
       }
     }
@@ -1397,34 +1434,32 @@
         document.getElementById('login-view').classList.add('hidden');
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('nav-user-name').innerText = currentUser;
-        renderQuickButtons();
-        updateAllCalculations();
+        
+        // Wait until firebase loads the data before updating UI
+        if(isDataLoaded) {
+          renderQuickButtons();
+          updateAllCalculations();
+        }
       } else {
         document.getElementById('login-view').classList.remove('hidden');
         document.getElementById('app-container').classList.add('hidden');
       }
     }
 
+    // 6. Expose all functions to global window object
+    // This allows the HTML onclick="..." attributes to keep working without modifying HTML!
+    Object.assign(window, {
+      handleLogin, handleLogout, switchView, setMode, handleNameInput, 
+      selectCustomerSuggestion, handleSaveEntry, editRecord, addNewAccount, 
+      removeAccount, openAccountDetails, closeAccountModal, deleteRecordDirect, 
+      openVarianceModal, closeVarianceModal, openStatusDetails, closeStatusModal, 
+      markStatusAsYes, renderContacts, useContactInEntry, openAddContactModal, 
+      editContact, closeAddContactModal, handleSaveContact, deleteContact, 
+      renderDatabase, exportCSV, updateAccountManualBal, updateManualNaya, 
+      saveCheckpoint, resetData
+    });
+
     window.addEventListener('DOMContentLoaded', initApp);
-  </script>
-
-  <!-- FIREBASE INITIALIZATION -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDtbcTKKyTFp9EKIu6brtZRit-0tuGeUq0",
-      authDomain: "basinasdana.firebaseapp.com",
-      projectId: "basinasdana",
-      storageBucket: "basinasdana.firebasestorage.app",
-      messagingSenderId: "366740634554",
-      appId: "1:366740634554:web:f972f6a9b8e91cecb73b83",
-      measurementId: "G-F0ZDRL1BW7"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
   </script>
 </body>
 </html>
