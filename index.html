@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Business Management System Pro</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-slate-100 text-slate-800 antialiased min-h-screen p-3 sm:p-6 lg:p-8">
+
+  <!-- LOGIN PAGE -->
+  <div id="login-view" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-indigo-900 via-blue-900 to-cyan-900 p-4">
+    <div class="bg-white rounded-3xl p-8 sm:p-10 max-w-md w-full shadow-2xl border border-indigo-100 text-center">
+      <div class="w-16 h-16 rounded-2xl bg-indigo-600/10 text-indigo-600 flex items-center justify-center mx-auto mb-5 text-2xl">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-indigo-900 tracking-tight">Business Pro</h2>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1 mb-6">Financial Ledger & Balance Sheet Management</p>
+
+      <div class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1.5">Username</label>
+          <input type="text" id="login-username" value="" placeholder="Enter Username" class="w-full px-4 py-3 bg-indigo-50/50 border border-indigo-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/30 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1.5">Password / PIN</label>
+          <input type="password" id="login-password" value="" placeholder="Enter PIN" class="w-full px-4 py-3 bg-indigo-50/50 border border-indigo-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500/30 focus:outline-none" />
+        </div>
+        <div id="login-error" class="text-xs text-rose-600 font-semibold hidden"></div>
+
+        <button onclick="handleLogin()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-indigo-500/30 cursor-pointer mt-2">
+          Sign In to Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD -->
+  <div id="app-container" class="max-w-7xl mx-auto hidden">
+    <!-- Top Navbar -->
+    <header class="bg-gradient-to-r from-indigo-800 via-blue-800 to-indigo-900 text-white rounded-2xl p-4 sm:p-5 shadow-xl border border-indigo-700 mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Welcome, <span id="nav-user-name" class="text-cyan-300">Dana</span></h2>
+            </div>
+            <p class="text-xs text-indigo-200 mt-0.5">Business Management System Pro</p>
+          </div>
+
+          <!-- Clickable Mini Variance Badge -->
+          <button onclick="openVarianceModal()" class="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-indigo-950/50 hover:bg-indigo-900 border border-indigo-700 text-xs transition-colors cursor-pointer text-left">
+            <i class="fa-solid fa-wallet text-cyan-300"></i>
+            <span class="text-indigo-200">Net vs Checkpoint:</span>
+            <span id="nav-variance-badge" class="font-semibold text-emerald-400">Balanced</span>
+            <span class="text-[10px] bg-indigo-800 text-indigo-200 px-1 py-0.5 rounded">🔍</span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="nav-btn-entry" onclick="switchView('entry-view')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-cyan-600 text-white border border-cyan-500 shadow-md flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Data Entry Form</span>
+          </button>
+          <button id="nav-btn-contacts" onclick="switchView('contacts-view')" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-indigo-950/40 text-indigo-100 hover:text-white border border-indigo-700 flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-users"></i>
+            <span>Contacts</span>
+            <span id="nav-contacts-count" class="px-1.5 py-0.5 rounded-full bg-indigo-900 text-[10px] font-bold text-emerald-300">0</span>
+          </button>
+          <button id="nav-btn-database" onclick="switchView('database-view')" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-indigo-950/40 text-indigo-100 hover:text-white border border-indigo-700 flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-database"></i>
+            <span>Database</span>
+            <span id="nav-records-count" class="px-1.5 py-0.5 rounded-full bg-indigo-900 text-[10px] font-bold text-cyan-300">0</span>
+          </button>
+          <button id="nav-btn-balance" onclick="switchView('balance-view')" class="px-3.5 py-2 rounded-xl text-xs font-medium bg-indigo-950/40 text-indigo-100 hover:text-white border border-indigo-700 flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>Balance Sheet</span>
+          </button>
+          <button onclick="resetData()" title="Reset Demo Data" class="p-2 bg-indigo-950/40 text-indigo-300 hover:text-white border border-indigo-700 rounded-xl cursor-pointer">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          <button onclick="handleLogout()" title="Logout" class="p-2 bg-rose-500/20 text-rose-300 border border-rose-500/40 rounded-xl cursor-pointer">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- VIEW 1: DATA ENTRY FORM -->
+    <div id="entry-view" class="view-panel space-y-6">
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-lg border border-indigo-100">
+        <div class="grid grid-cols-2 gap-3 p-1.5 bg-indigo-50 rounded-2xl mb-6">
+          <button id="mode-btn-deposit" onclick="setMode('deposit')" class="py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-emerald-700 shadow border border-emerald-200">
+            <i class="fa-solid fa-arrow-down-left"></i>
+            <span>DEPOSIT (මුදල් ලැබීම)</span>
+          </button>
+          <button id="mode-btn-withdrawal" onclick="setMode('withdrawal')" class="py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer text-indigo-600 hover:text-indigo-900">
+            <i class="fa-solid fa-arrow-up-right"></i>
+            <span>WITHDRAWAL (මුදල් ගෙවීම)</span>
+          </button>
+        </div>
+
+        <form id="entry-form" onsubmit="handleSaveEntry(event)" class="space-y-6">
+          <!-- (01) Customer Name / Phone -->
+          <div class="relative">
+            <label class="block text-xs font-bold text-indigo-900 uppercase tracking-wide mb-1.5">
+              (01) Customer Name / Phone Number (පාරිභෝගිකයාගේ නම හෝ අංකය)
+            </label>
+            <input type="text" id="entry-name" required placeholder="Type name or phone (auto-saves to contacts)..." class="w-full px-4 py-3 bg-blue-50/50 border border-blue-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30" oninput="handleNameInput(this.value)" autocomplete="off" />
+            <div id="name-suggestions" class="absolute z-20 left-0 right-0 mt-1 bg-white border border-indigo-100 rounded-xl shadow-xl max-h-48 overflow-y-auto hidden"></div>
+          </div>
+
+          <!-- (02) From Account with Quick Buttons -->
+          <div>
+            <label id="lbl-from" class="block text-xs font-bold text-emerald-700 uppercase tracking-wide mb-1.5">
+              (02) Bank (+ එකතු වේ - From)
+            </label>
+            <input type="text" id="entry-from" required placeholder="Select or type account..." class="w-full px-4 py-3 bg-emerald-50/30 border border-emerald-200 rounded-xl text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30" />
+            <div class="mt-2.5 flex flex-wrap items-center gap-1.5" id="from-quick-buttons"></div>
+          </div>
+
+          <!-- (03) & (04) Destination Accounts with Quick Buttons -->
+          <div class="p-4 sm:p-5 bg-rose-50/40 rounded-2xl border-l-4 border-rose-500 border-t border-r border-b border-rose-100 space-y-4">
+            <label id="lbl-to" class="block text-xs font-bold text-rose-700 uppercase tracking-wide">
+              (03) & (04) Betting Sites සහ LKR මුදල (- අඩු වේ)
+            </label>
+
+            <!-- Row 1 -->
+            <div class="space-y-1.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" id="entry-to-1" placeholder="Account 1 (e.g. 1xBet)" class="w-full px-4 py-2.5 bg-white border border-rose-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-rose-200 focus:outline-none" />
+                <input type="number" step="any" id="entry-lkr-1" placeholder="LKR Amount 1" class="w-full px-4 py-2.5 bg-white border border-rose-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-rose-200 focus:outline-none" />
+              </div>
+              <div class="flex flex-wrap gap-1" id="to-quick-1"></div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="space-y-1.5 pt-2 border-t border-rose-100">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" id="entry-to-2" placeholder="Account 2 (optional)" class="w-full px-4 py-2.5 bg-white border border-rose-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-rose-200 focus:outline-none" />
+                <input type="number" step="any" id="entry-lkr-2" placeholder="LKR Amount 2" class="w-full px-4 py-2.5 bg-white border border-rose-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-rose-200 focus:outline-none" />
+              </div>
+              <div class="flex flex-wrap gap-1" id="to-quick-2"></div>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="space-y-1.5 pt-2 border-t border-rose-100">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" id="entry-to-3" placeholder="Account 3 (optional)" class="w-full px-4 py-2.5 bg-white border border-rose-200 rounded-xl text-sm font-medium text-slate-800 focus:ring-2 focus:ring-rose-200 focus:outline-none" />
+                <input type="number" step="any" id="entry-lkr-3" placeholder="LKR Amount 3" class="w-full px-4 py-2.5 bg-white border border-rose-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-rose-200 focus:outline-none" />
+              </div>
+              <div class="flex flex-wrap gap-1" id="to-quick-3"></div>
+            </div>
+          </div>
+
+          <!-- (05) Status -->
+          <div>
+            <label class="block text-xs font-bold text-indigo-900 uppercase tracking-wide mb-1.5">(05) Select Status</label>
+            <select id="entry-status" class="w-full px-4 py-3 bg-indigo-50/50 border border-indigo-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+              <option value="Yes">Yes (Settled / Completed)</option>
+              <option value="Nayata">Nayata (ණයට)</option>
+              <option value="Pending Deposit">Pending Deposit (තැන්පතු පොරොත්තු)</option>
+              <option value="Pending Withdrawal">Pending Withdrawal (ගෙවීම් පොරොත්තු)</option>
+            </select>
+          </div>
+
+          <!-- (06) Note -->
+          <div>
+            <label class="block text-xs font-bold text-indigo-900 uppercase tracking-wide mb-1.5">(06) Note (සටහන්)</label>
+            <textarea id="entry-note" rows="2" placeholder="Optional transaction note..." class="w-full px-4 py-3 bg-indigo-50/50 border border-indigo-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"></textarea>
+          </div>
+
+          <button type="submit" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-2xl text-base shadow-lg shadow-indigo-500/30 transition-all cursor-pointer flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check-double"></i>
+            <span id="entry-submit-btn-text">DONE / SAVE RECORD (සේව් කරන්න)</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- VIEW 2: CONTACTS VIEW -->
+    <div id="contacts-view" class="view-panel space-y-6 hidden">
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-lg border border-indigo-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-indigo-50">
+          <div>
+            <h3 class="text-xl font-bold text-indigo-900 flex items-center gap-2">
+              <i class="fa-solid fa-address-book text-emerald-600"></i>
+              <span>Customer Contacts (ගනුදෙනුකරුවන්ගේ නාමාවලිය)</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">Manage contacts, quick autocomplete, and auto-saved clients.</p>
+          </div>
+          <button onclick="openAddContactModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-md">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Add New Contact</span>
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <input type="text" id="contacts-search" placeholder="Search contacts by name, phone or note..." oninput="renderContacts()" class="w-full px-4 py-2.5 bg-indigo-50/50 border border-indigo-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-indigo-100">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-indigo-50 text-indigo-900 uppercase font-bold text-[11px]">
+              <tr>
+                <th class="p-3">Customer Name</th>
+                <th class="p-3">Phone Number</th>
+                <th class="p-3">Note</th>
+                <th class="p-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="contacts-table-body" class="divide-y divide-indigo-50"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: DATABASE VIEW -->
+    <div id="database-view" class="view-panel space-y-6 hidden">
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-lg border border-indigo-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-indigo-50">
+          <div>
+            <h3 class="text-xl font-bold text-indigo-900 flex items-center gap-2">
+              <i class="fa-solid fa-database text-blue-600"></i>
+              <span>Saved Database Records</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">Complete historical ledger entries with inline deletion and editing.</p>
+          </div>
+          <button onclick="exportCSV()" class="px-4 py-2 bg-indigo-900 hover:bg-indigo-950 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-md">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>Export CSV</span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+          <input type="text" id="db-search" placeholder="Search records..." oninput="renderDatabase()" class="flex-1 min-w-[200px] px-4 py-2 bg-indigo-50/50 border border-indigo-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+          <select id="db-filter-status" onchange="renderDatabase()" class="px-3 py-2 bg-indigo-50/50 border border-indigo-200 rounded-xl text-xs font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30">
+            <option value="ALL">All Statuses</option>
+            <option value="Yes">Yes (Settled)</option>
+            <option value="Nayata">Nayata</option>
+            <option value="Pending Deposit">Pending Deposit</option>
+            <option value="Pending Withdrawal">Pending Withdrawal</option>
+          </select>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-indigo-100">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-indigo-50 text-indigo-900 uppercase font-bold text-[11px]">
+              <tr>
+                <th class="p-3">Date & Time</th>
+                <th class="p-3">Customer</th>
+                <th class="p-3">From (+)</th>
+                <th class="p-3">To (-)</th>
+                <th class="p-3">Amounts (LKR)</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Note</th>
+                <th class="p-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="database-table-body" class="divide-y divide-indigo-50"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: BALANCE SHEET -->
+    <div id="balance-view" class="view-panel space-y-8 hidden">
+      <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-lg border border-indigo-100">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div>
+            <h3 class="text-2xl font-bold text-indigo-900 tracking-tight flex items-center gap-2">
+              <span>Live Balance Sheet</span>
+              <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">Real-Time</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">Automatic reconciliation based on settled ledger and manual baselines.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 bg-indigo-50 p-2.5 rounded-xl border border-indigo-100">
+            <span class="text-xs font-bold text-indigo-900 px-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-wallet text-blue-600"></i>
+              <span>Manual System Cash:</span>
+            </span>
+            <input type="number" step="any" id="checkpoint-input" placeholder="Enter Cash LKR" class="w-36 px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+            <button onclick="saveCheckpoint()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs cursor-pointer shadow">
+              Update
+            </button>
+          </div>
+        </div>
+
+        <!-- Clickable Variance Banner -->
+        <div onclick="openVarianceModal()" class="mt-5 p-4 rounded-xl bg-gradient-to-r from-indigo-900 to-blue-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:from-indigo-800 hover:to-blue-800 transition border border-indigo-700 shadow-md">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 rounded-xl bg-emerald-500/30 text-emerald-300 text-lg">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+              <div class="text-xs text-indigo-200 font-medium">Net vs Checkpoint: Cash Variance Analysis (Touch to Inspect 🔍)</div>
+              <div class="text-sm sm:text-base font-bold text-white mt-0.5">
+                Hand-on: <span id="banner-hand-on">0.00</span> | System: <span id="banner-checkpoint">0.00</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-left sm:text-right">
+            <div class="text-[11px] uppercase tracking-wider text-indigo-300">Cash Variance</div>
+            <div id="banner-variance-val" class="text-lg sm:text-xl font-extrabold text-emerald-400">Balanced</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actual Hand-on Balance Hero Section -->
+      <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-lg border-t-8 border-emerald-500 border-x border-b border-indigo-100">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div>
+            <h4 class="text-xl font-bold text-indigo-900 flex items-center gap-2">
+              <span>Actual Hand-on Balance (ඇත්තටම ළඟ ඇති මුදල)</span>
+              <button onclick="openVarianceModal()" class="text-slate-400 hover:text-indigo-600 cursor-pointer"><i class="fa-solid fa-circle-info"></i></button>
+            </h4>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
+              Formula: (Banks + Betting Sites + Mulu Naya) - Pending Deposits - Pending Withdrawals
+            </p>
+          </div>
+          <div id="hero-actual-balance" class="text-3xl sm:text-4xl font-extrabold text-emerald-600">0.00 LKR</div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-indigo-50">
+          <div class="p-4 rounded-xl bg-emerald-50/70 border-l-4 border-emerald-500 border-t border-r border-b border-emerald-100">
+            <div class="flex items-center justify-between text-xs font-semibold text-emerald-800 uppercase">
+              <span>1. BANKS Total (බැංකු එකතුව)</span>
+              <span id="banks-count-label" class="bg-emerald-100 px-2 py-0.5 rounded text-emerald-900">0 Accounts</span>
+            </div>
+            <div id="banks-grand-total" class="text-2xl font-bold text-emerald-700 mt-2">0.00 LKR</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-purple-50/70 border-l-4 border-purple-500 border-t border-r border-b border-purple-100">
+            <div class="flex items-center justify-between text-xs font-semibold text-purple-800 uppercase">
+              <span>2. BETTING SITES Total (බෙටිං අඩවි එකතුව)</span>
+              <span id="betting-count-label" class="bg-purple-100 px-2 py-0.5 rounded text-purple-900">0 Sites</span>
+            </div>
+            <div id="betting-grand-total" class="text-2xl font-bold text-purple-700 mt-2">0.00 LKR</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Summaries -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div onclick="openStatusDetails('Nayata')" class="p-5 bg-white rounded-2xl shadow-md border-t-4 border-rose-500 border-x border-b border-indigo-100 cursor-pointer hover:shadow-lg transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+              <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Mulu Nayata (ණයට)
+            </span>
+            <span class="text-[10px] font-semibold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">Details →</span>
+          </div>
+          <div id="card-nayata-val" class="text-2xl font-bold text-rose-600">0.00 LKR</div>
+          <div class="mt-3 pt-2.5 border-t border-indigo-50" onclick="event.stopPropagation()">
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">Manual Nayata Base (LKR):</label>
+            <input type="number" step="any" id="manual-naya-input" placeholder="Manual Nayata Base" onchange="updateManualNaya(this.value)" class="w-full px-3 py-1.5 bg-indigo-50/50 border border-indigo-100 rounded-lg text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-rose-300" />
+          </div>
+        </div>
+
+        <div onclick="openStatusDetails('Pending Deposit')" class="p-5 bg-white rounded-2xl shadow-md border-t-4 border-amber-500 border-x border-b border-indigo-100 cursor-pointer hover:shadow-lg transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+              <i class="fa-solid fa-clock text-amber-500"></i> Total Pending Deposit
+            </span>
+            <span class="text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Details →</span>
+          </div>
+          <div id="card-pdep-val" class="text-2xl font-bold text-amber-600">0.00 LKR</div>
+          <p class="text-[11px] text-slate-400 mt-1">Awaiting confirmation slips</p>
+        </div>
+
+        <div onclick="openStatusDetails('Pending Withdrawal')" class="p-5 bg-white rounded-2xl shadow-md border-t-4 border-orange-500 border-x border-b border-indigo-100 cursor-pointer hover:shadow-lg transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase flex items-center gap-1">
+              <i class="fa-solid fa-clock text-orange-500"></i> Total Pending Withdrawal
+            </span>
+            <span class="text-[10px] font-semibold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full">Details →</span>
+          </div>
+          <div id="card-pwit-val" class="text-2xl font-bold text-orange-600">0.00 LKR</div>
+          <p class="text-[11px] text-slate-400 mt-1">Awaiting payout execution</p>
+        </div>
+      </div>
+
+      <!-- SECTION 1: BANK ACCOUNTS -->
+      <div class="p-6 bg-white rounded-2xl shadow-lg border border-indigo-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-indigo-50">
+          <div class="flex items-center gap-3">
+            <h4 class="text-lg sm:text-xl font-bold text-indigo-900 flex items-center gap-2">
+              <i class="fa-solid fa-building-columns text-emerald-600"></i>
+              <span>1. Bank Accounts</span>
+            </h4>
+            <button onclick="addNewAccount('bank')" class="px-2.5 py-1.5 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-lg text-[11px] font-bold cursor-pointer transition">
+              + Add Bank
+            </button>
+          </div>
+          <p class="text-xs text-slate-500">Touch card to inspect or Delete.</p>
+        </div>
+        <div id="banks-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      </div>
+
+      <!-- SECTION 2: BETTING SITES -->
+      <div class="p-6 bg-white rounded-2xl shadow-lg border border-indigo-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-indigo-50">
+          <div class="flex items-center gap-3">
+            <h4 class="text-lg sm:text-xl font-bold text-indigo-900 flex items-center gap-2">
+              <i class="fa-solid fa-gamepad text-purple-600"></i>
+              <span>2. Betting Sites</span>
+            </h4>
+            <button onclick="addNewAccount('betting')" class="px-2.5 py-1.5 bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-lg text-[11px] font-bold cursor-pointer transition">
+              + Add Site
+            </button>
+          </div>
+          <p class="text-xs text-slate-500">Touch card to inspect or Delete.</p>
+        </div>
+        <div id="betting-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Account Details Modal -->
+  <div id="account-details-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-950/70 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-indigo-100 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-indigo-50">
+        <h4 id="account-modal-title" class="text-lg font-bold text-indigo-900 uppercase">Account Details</h4>
+        <button onclick="closeAccountModal()" class="text-slate-400 hover:text-indigo-600 text-xl font-bold cursor-pointer">&times;</button>
+      </div>
+      <div class="grid grid-cols-3 gap-2 my-4 text-center">
+        <div class="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200">
+          <div class="text-[10px] uppercase font-bold text-emerald-800">Total Added (+)</div>
+          <div id="account-modal-added" class="text-sm font-extrabold text-emerald-600 mt-1">0.00 LKR</div>
+        </div>
+        <div class="p-2.5 bg-rose-50 rounded-xl border border-rose-200">
+          <div class="text-[10px] uppercase font-bold text-rose-800">Total Deducted (-)</div>
+          <div id="account-modal-deducted" class="text-sm font-extrabold text-rose-600 mt-1">0.00 LKR</div>
+        </div>
+        <div class="p-2.5 bg-blue-50 rounded-xl border border-blue-200">
+          <div class="text-[10px] uppercase font-bold text-blue-800">Net Calculated</div>
+          <div id="account-modal-net" class="text-sm font-extrabold text-blue-700 mt-1">0.00 LKR</div>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-indigo-50 text-indigo-900 font-bold text-[11px]">
+            <tr>
+              <th class="p-2.5">Date</th>
+              <th class="p-2.5">Customer / Details</th>
+              <th class="p-2.5">Impact (LKR)</th>
+              <th class="p-2.5 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="account-modal-tbody" class="divide-y divide-indigo-50"></tbody>
+        </table>
+      </div>
+      <div class="pt-3 border-t border-indigo-50 text-right">
+        <button onclick="closeAccountModal()" class="px-4 py-2 bg-indigo-900 text-white hover:bg-indigo-950 rounded-xl text-xs font-semibold cursor-pointer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variance Inspection Modal -->
+  <div id="variance-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-950/70 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-indigo-100">
+      <div class="flex items-center justify-between pb-3 border-b border-indigo-50">
+        <h4 class="text-lg font-bold text-indigo-900 flex items-center gap-2">
+          <i class="fa-solid fa-scale-balanced text-blue-600"></i>
+          <span>Variance Inspection Breakdown</span>
+        </h4>
+        <button onclick="closeVarianceModal()" class="text-slate-400 hover:text-indigo-600 text-xl font-bold cursor-pointer">&times;</button>
+      </div>
+      <div class="my-4 space-y-2.5 text-xs">
+        <div class="flex justify-between p-2.5 bg-indigo-50 rounded-xl border border-indigo-100">
+          <span class="font-bold text-indigo-900">1. Banks Total (+ එකතු වේ)</span>
+          <span id="v-banks" class="font-extrabold text-emerald-600">0.00 LKR</span>
+        </div>
+        <div class="flex justify-between p-2.5 bg-indigo-50 rounded-xl border border-indigo-100">
+          <span class="font-bold text-indigo-900">2. Betting Sites Total (+ එකතු වේ)</span>
+          <span id="v-betting" class="font-extrabold text-purple-600">0.00 LKR</span>
+        </div>
+        <div class="flex justify-between p-2.5 bg-indigo-50 rounded-xl border border-indigo-100">
+          <span class="font-bold text-indigo-900">3. Mulu Nayata (+ ලැබිය යුතු ණය)</span>
+          <span id="v-naya" class="font-extrabold text-blue-600">0.00 LKR</span>
+        </div>
+        <div class="flex justify-between p-2.5 bg-amber-50 rounded-xl border border-amber-200">
+          <span class="font-bold text-amber-900">4. Pending Deposits (- අඩු වේ)</span>
+          <span id="v-pdep" class="font-extrabold text-amber-700">0.00 LKR</span>
+        </div>
+        <div class="flex justify-between p-2.5 bg-orange-50 rounded-xl border border-orange-200">
+          <span class="font-bold text-orange-900">5. Pending Withdrawals (- අඩු වේ)</span>
+          <span id="v-pwit" class="font-extrabold text-orange-700">0.00 LKR</span>
+        </div>
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-300 font-bold flex justify-between text-sm">
+          <span class="text-emerald-900">= Actual Hand-on Balance:</span>
+          <span id="v-hand-on" class="text-emerald-700 font-extrabold">0.00 LKR</span>
+        </div>
+        <div class="p-3 bg-slate-100 rounded-xl border border-slate-300 font-bold flex justify-between text-sm">
+          <span class="text-slate-800">System Cash Checkpoint:</span>
+          <span id="v-system-cash" class="text-slate-900 font-extrabold">0.00 LKR</span>
+        </div>
+        <div id="v-result-box" class="p-3.5 rounded-xl font-extrabold text-center text-sm"></div>
+      </div>
+      <div class="text-right">
+        <button onclick="closeVarianceModal()" class="px-4 py-2 bg-indigo-900 text-white hover:bg-indigo-950 rounded-xl text-xs font-semibold cursor-pointer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Details Modal -->
+  <div id="status-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-950/70 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-indigo-100 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-indigo-50">
+        <h4 id="status-modal-title" class="text-lg font-bold text-indigo-900">Status Details</h4>
+        <button onclick="closeStatusModal()" class="text-slate-400 hover:text-indigo-600 text-xl font-bold cursor-pointer">&times;</button>
+      </div>
+      <div class="flex-1 overflow-y-auto my-3">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-indigo-50 text-indigo-900 font-bold text-[11px]">
+            <tr>
+              <th class="p-2.5">Date</th>
+              <th class="p-2.5">Details</th>
+              <th class="p-2.5">Amount (LKR)</th>
+              <th class="p-2.5 text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="status-modal-tbody" class="divide-y divide-indigo-50"></tbody>
+        </table>
+      </div>
+      <div class="pt-2 text-right border-t border-indigo-50">
+        <button onclick="closeStatusModal()" class="px-4 py-2 bg-indigo-900 text-white hover:bg-indigo-950 rounded-xl text-xs font-semibold cursor-pointer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Contact Modal -->
+  <div id="add-contact-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-950/70 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-indigo-100">
+      <h4 id="contact-modal-title" class="text-lg font-bold text-indigo-900 mb-3">Add New Contact</h4>
+      <form onsubmit="handleSaveContact(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-indigo-900 mb-1">Customer Name</label>
+          <input type="text" id="new-contact-name" required placeholder="e.g. Kasun Silva" class="w-full px-3 py-2 bg-indigo-50/50 border border-indigo-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-indigo-900 mb-1">Phone Number</label>
+          <input type="text" id="new-contact-phone" placeholder="07X XXXXXXX" class="w-full px-3 py-2 bg-indigo-50/50 border border-indigo-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-indigo-900 mb-1">Note (Optional)</label>
+          <input type="text" id="new-contact-note" placeholder="VIP / Daily client" class="w-full px-3 py-2 bg-indigo-50/50 border border-indigo-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeAddContactModal()" class="flex-1 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl text-xs font-semibold cursor-pointer">Cancel</button>
+          <button type="submit" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer">Save Contact</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    let bankAccountsList = JSON.parse(localStorage.getItem('biz_banks')) || ['sampath', 'peoples', 'lolc', 'lb', 'ez cash', 'dialog', 'cash', 'commercial'];
+    let bettingAccountsList = JSON.parse(localStorage.getItem('biz_betting')) || ['1xbet', '888', 'db bet', 'melbet', 'web', 'megapari', 'bet365'];
+
+    const SAMPLE_RECORDS = [
+      { id: 101, date: '2026-09-14 09:15', mode: 'deposit', name: 'Sunil Perera (0771234567)', from: 'sampath', toArr: [{ site: '1xbet', amount: 50000 }], status: 'Yes', note: 'Morning slip confirmed' },
+      { id: 102, date: '2026-09-14 10:30', mode: 'withdrawal', name: 'Nimal Bandara', from: '888', toArr: [{ site: 'peoples', amount: 35000 }], status: 'Pending Withdrawal', note: 'Queued for 12 PM transfer' },
+      { id: 103, date: '2026-09-14 11:00', mode: 'deposit', name: 'Kamal Silva (0719876543)', from: 'lb', toArr: [{ site: 'db bet', amount: 20000 }], status: 'Nayata', note: 'To settle tonight' }
+    ];
+
+    const SAMPLE_CONTACTS = [
+      { id: 1, name: 'Sunil Perera', phone: '0771234567', note: 'Frequent Deposit', createdAt: '2026-09-14' },
+      { id: 2, name: 'Nimal Bandara', phone: '0754433221', note: '888 Player', createdAt: '2026-09-14' },
+      { id: 3, name: 'Kamal Silva', phone: '0719876543', note: 'VIP Regular', createdAt: '2026-09-14' }
+    ];
+
+    const SAMPLE_BALANCES = {
+      'sampath': '150000', 'peoples': '85000', 'lolc': '40000', 'lb': '25000', 'ez cash': '15000', 'dialog': '10000', 'cash': '50000',
+      '1xbet': '250000', '888': '180000', 'db bet': '95000', 'melbet': '60000', 'web': '30000', 'mulu naya': '45000'
+    };
+
+    let currentUser = localStorage.getItem('biz_user') || 'Dana';
+    let currentMode = 'deposit';
+    let records = JSON.parse(localStorage.getItem('biz_records') || 'null') || SAMPLE_RECORDS;
+    let contacts = JSON.parse(localStorage.getItem('biz_contacts') || 'null') || SAMPLE_CONTACTS;
+    let manualBalances = JSON.parse(localStorage.getItem('biz_manual_bal') || 'null') || SAMPLE_BALANCES;
+    let checkpointBalance = parseFloat(localStorage.getItem('biz_checkpoint_bal') || '915000');
+    let allAccounts = [...bankAccountsList, ...bettingAccountsList];
+
+    let currentStatusModalType = null;
+    let currentAccountModalTarget = null;
+    let editingRecordId = null;
+    let editingContactId = null;
+
+    function formatLKR(num) {
+      return (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' LKR';
+    }
+
+    function handleLogin() {
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value.trim();
+      const err = document.getElementById('login-error');
+      const validUsers = ['Dana', 'dana'];
+
+      if (validUsers.includes(u) && (p === '113' || p === '1995')) {
+        currentUser = u;
+        localStorage.setItem('biz_user', u);
+        err.classList.add('hidden');
+        initApp();
+      } else {
+        err.innerText = 'Invalid username or password!';
+        err.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('biz_user');
+      currentUser = null;
+      document.getElementById('login-view').classList.remove('hidden');
+      document.getElementById('app-container').classList.add('hidden');
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
+      document.getElementById(viewId).classList.remove('hidden');
+
+      ['entry', 'contacts', 'database', 'balance'].forEach(name => {
+        const btn = document.getElementById('nav-btn-' + name);
+        if (viewId === name + '-view') {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs font-semibold bg-cyan-600 text-white border border-cyan-500 shadow-md flex items-center gap-1.5 cursor-pointer';
+        } else {
+          btn.className = 'px-3.5 py-2 rounded-xl text-xs font-medium bg-indigo-950/40 text-indigo-100 hover:text-white border border-indigo-700 flex items-center gap-1.5 cursor-pointer';
+        }
+      });
+
+      if (viewId === 'contacts-view') renderContacts();
+      if (viewId === 'database-view') renderDatabase();
+      if (viewId === 'balance-view') renderBalanceSheet();
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      const btnDep = document.getElementById('mode-btn-deposit');
+      const btnWit = document.getElementById('mode-btn-withdrawal');
+      const lblFrom = document.getElementById('lbl-from');
+      const lblTo = document.getElementById('lbl-to');
+
+      if (mode === 'deposit') {
+        btnDep.className = 'py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-emerald-700 shadow border border-emerald-200';
+        btnWit.className = 'py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer text-indigo-600 hover:text-indigo-900';
+        lblFrom.innerText = '(02) Bank (+ එකතු වේ - From)';
+        lblFrom.className = 'text-xs font-bold text-emerald-700 uppercase tracking-wide';
+        lblTo.innerText = '(03) & (04) Betting Sites සහ LKR මුදල (- අඩු වේ)';
+      } else {
+        btnWit.className = 'py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-rose-700 shadow border border-rose-200';
+        btnDep.className = 'py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer text-indigo-600 hover:text-indigo-900';
+        lblFrom.innerText = '(02) Betting Site (+ එකතු වේ - From)';
+        lblFrom.className = 'text-xs font-bold text-purple-700 uppercase tracking-wide';
+        lblTo.innerText = '(03) & (04) Banks සහ LKR මුදල (- අඩු වේ)';
+      }
+      renderQuickButtons();
+    }
+
+    function renderQuickButtons() {
+      const fromContainer = document.getElementById('from-quick-buttons');
+      fromContainer.innerHTML = '';
+      const fromList = currentMode === 'deposit' ? bankAccountsList : bettingAccountsList;
+      const toList = currentMode === 'deposit' ? bettingAccountsList : bankAccountsList;
+
+      fromList.forEach(acc => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'px-2 py-1 rounded-lg text-[11px] font-semibold bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-800 cursor-pointer shadow-sm flex items-center gap-1';
+        btn.innerHTML = `<span class="w-4 h-4 rounded-full bg-indigo-100 font-extrabold text-[9px] flex items-center justify-center">${acc.charAt(0).toUpperCase()}</span><span>${acc}</span>`;
+        btn.onclick = () => document.getElementById('entry-from').value = acc;
+        fromContainer.appendChild(btn);
+      });
+
+      [1, 2, 3].forEach(rowIdx => {
+        const toContainer = document.getElementById('to-quick-' + rowIdx);
+        toContainer.innerHTML = '';
+        toList.forEach(acc => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-white hover:bg-rose-50 border border-rose-200 text-slate-700 cursor-pointer flex items-center gap-1';
+          btn.innerHTML = `<span class="w-3.5 h-3.5 rounded-full bg-slate-100 font-extrabold text-[8px] flex items-center justify-center">${acc.charAt(0).toUpperCase()}</span><span>${acc}</span>`;
+          btn.onclick = () => document.getElementById('entry-to-' + rowIdx).value = acc;
+          toContainer.appendChild(btn);
+        });
+      });
+    }
+
+    function handleNameInput(val) {
+      const box = document.getElementById('name-suggestions');
+      if (!val.trim()) { box.classList.add('hidden'); return; }
+      const q = val.toLowerCase().trim();
+      const matches = [];
+
+      contacts.forEach(c => {
+        if (c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q))) {
+          matches.push(`${c.name} (${c.phone || 'No phone'})`);
+        }
+      });
+
+      if (matches.length > 0) {
+        box.innerHTML = matches.slice(0, 5).map(m => `
+          <div class="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-xs font-semibold text-slate-700 border-b border-indigo-50 last:border-0" onclick="selectCustomerSuggestion('${m}')">
+            <i class="fa-solid fa-user text-indigo-400 mr-2"></i>${m}
+          </div>
+        `).join('');
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    function selectCustomerSuggestion(val) {
+      document.getElementById('entry-name').value = val;
+      document.getElementById('name-suggestions').classList.add('hidden');
+    }
+
+    function handleSaveEntry(e) {
+      e.preventDefault();
+      const name = document.getElementById('entry-name').value.trim();
+      const from = document.getElementById('entry-from').value.trim().toLowerCase();
+      const status = document.getElementById('entry-status').value;
+      const note = document.getElementById('entry-note').value.trim();
+
+      const toArr = [];
+      for (let i = 1; i <= 3; i++) {
+        const site = document.getElementById('entry-to-' + i).value.trim().toLowerCase();
+        const amt = parseFloat(document.getElementById('entry-lkr-' + i).value);
+        if (site && !isNaN(amt) && amt > 0) {
+          toArr.push({ site, amount: amt });
+        }
+      }
+
+      if (!name || !from || toArr.length === 0) {
+        alert('කරුණාකර Name, From Account සහ අවම වශයෙන් එක් To Account එකක් සමග LKR මුදලක් ඇතුලත් කරන්න.');
+        return;
+      }
+
+      const existsInContacts = contacts.some(c => 
+        c.name.toLowerCase() === name.toLowerCase() || (c.phone && name.includes(c.phone))
+      );
+      
+      if (!existsInContacts && !editingRecordId) {
+        const newContact = {
+          id: Date.now(),
+          name: name.replace(/\(.*?\)/g, '').trim(),
+          phone: (name.match(/\((.*?)\)/) || [])[1] || '',
+          note: 'Auto-saved from Data Entry',
+          createdAt: new Date().toISOString().split('T')[0]
+        };
+        contacts.unshift(newContact);
+        localStorage.setItem('biz_contacts', JSON.stringify(contacts));
+      }
+
+      const now = new Date();
+      const dateStr = now.toISOString().replace('T', ' ').substring(0, 16);
+
+      if (editingRecordId) {
+        const idx = records.findIndex(r => r.id === editingRecordId);
+        if (idx > -1) {
+          records[idx] = {
+            ...records[idx],
+            mode: currentMode, name, from, toArr, status, note
+          };
+        }
+        editingRecordId = null;
+        document.getElementById('entry-submit-btn-text').innerText = 'DONE / SAVE RECORD (සේව් කරන්න)';
+        alert('Record Updated Successfully!');
+      } else {
+        records.push({
+          id: Date.now(), date: dateStr, mode: currentMode, name, from, toArr, status, note
+        });
+        alert('Record Saved Successfully! (සේව් කිරීම සාර්ථකයි)');
+      }
+      
+      localStorage.setItem('biz_records', JSON.stringify(records));
+
+      document.getElementById('entry-name').value = '';
+      document.getElementById('entry-from').value = '';
+      document.getElementById('entry-note').value = '';
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('entry-to-' + i).value = '';
+        document.getElementById('entry-lkr-' + i).value = '';
+      }
+
+      updateAllCalculations();
+    }
+
+    function editRecord(id) {
+      const rec = records.find(r => r.id === id);
+      if (!rec) return;
+
+      editingRecordId = id;
+      setMode(rec.mode);
+      
+      document.getElementById('entry-name').value = rec.name;
+      document.getElementById('entry-from').value = rec.from;
+      document.getElementById('entry-status').value = rec.status;
+      document.getElementById('entry-note').value = rec.note || '';
+
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('entry-to-' + i).value = '';
+        document.getElementById('entry-lkr-' + i).value = '';
+      }
+
+      rec.toArr.forEach((t, i) => {
+        if (i < 3) {
+          document.getElementById('entry-to-' + (i + 1)).value = t.site;
+          document.getElementById('entry-lkr-' + (i + 1)).value = t.amount;
+        }
+      });
+
+      document.getElementById('entry-submit-btn-text').innerText = 'UPDATE RECORD (යාවත්කාලීන කරන්න)';
+      
+      closeAccountModal();
+      closeStatusModal();
+      closeVarianceModal();
+      switchView('entry-view');
+    }
+
+    function calculateBalances() {
+      const accountTotals = {};
+      const statusTotals = { 'Nayata': 0, 'Pending Deposit': 0, 'Pending Withdrawal': 0 };
+
+      allAccounts.forEach(acc => {
+        if (acc.toLowerCase() !== 'mulu naya') {
+          accountTotals[acc.toLowerCase()] = parseFloat(manualBalances[acc.toLowerCase()]) || 0;
+        }
+      });
+
+      const baseNaya = parseFloat(manualBalances['mulu naya']) || 0;
+
+      records.forEach(rec => {
+        const totalAmount = rec.toArr.reduce((sum, item) => sum + (item.amount || 0), 0);
+        const fromKey = rec.from.toLowerCase().trim();
+
+        if (rec.status === 'Yes') {
+          accountTotals[fromKey] = (accountTotals[fromKey] || 0) + totalAmount;
+          rec.toArr.forEach(t => {
+            const toKey = t.site.toLowerCase().trim();
+            accountTotals[toKey] = (accountTotals[toKey] || 0) - (t.amount || 0);
+          });
+        } else if (rec.status === 'Nayata') {
+          statusTotals['Nayata'] += totalAmount;
+        } else if (rec.status === 'Pending Deposit') {
+          statusTotals['Pending Deposit'] += totalAmount;
+        } else if (rec.status === 'Pending Withdrawal') {
+          statusTotals['Pending Withdrawal'] += totalAmount;
+        }
+      });
+
+      let banksTotal = 0;
+      let bettingTotal = 0;
+      let grandTotal = 0;
+      const bankAccs = [];
+      const bettingAccs = [];
+
+      Object.keys(accountTotals).forEach(acc => {
+        const bal = accountTotals[acc];
+        const isBank = bankAccountsList.includes(acc) || (!bettingAccountsList.includes(acc) && (acc.includes('bank') || acc.includes('cash') || acc.includes('pay')));
+        if (isBank) {
+          bankAccs.push(acc);
+          banksTotal += bal;
+        } else {
+          bettingAccs.push(acc);
+          bettingTotal += bal;
+        }
+        grandTotal += bal;
+      });
+
+      const finalNayata = baseNaya + statusTotals['Nayata'];
+      const actualNetBalance = grandTotal + finalNayata - statusTotals['Pending Deposit'] - statusTotals['Pending Withdrawal'];
+      const variance = actualNetBalance - checkpointBalance;
+
+      return {
+        accountTotals, bankAccs, bettingAccs, banksTotal, bettingTotal, baseNaya,
+        unsettledNaya: statusTotals['Nayata'], finalNayata,
+        pendingDepositTotal: statusTotals['Pending Deposit'],
+        pendingWithdrawalTotal: statusTotals['Pending Withdrawal'],
+        actualNetBalance, variance, isVarianceBalanced: Math.abs(variance) < 0.01
+      };
+    }
+
+    function addNewAccount(type) {
+      const typeStr = type === 'bank' ? 'Bank' : 'Betting Site';
+      let inputName = prompt(`Enter new ${typeStr} name:`);
+      
+      // Prevent errors if user clicks cancel on the prompt
+      if (!inputName) return; 
+      
+      const accName = inputName.trim().toLowerCase();
+      if (!accName) return;
+
+      if (type === 'bank') {
+        if (!bankAccountsList.includes(accName)) bankAccountsList.push(accName);
+        localStorage.setItem('biz_banks', JSON.stringify(bankAccountsList));
+      } else {
+        if (!bettingAccountsList.includes(accName)) bettingAccountsList.push(accName);
+        localStorage.setItem('biz_betting', JSON.stringify(bettingAccountsList));
+      }
+      allAccounts = [...bankAccountsList, ...bettingAccountsList];
+      updateAllCalculations();
+      renderQuickButtons();
+    }
+
+    function removeAccount(acc, type) {
+      if (confirm(`Remove '${acc}' card from the balance sheet? (Transactions will remain in the database)`)) {
+        if (type === 'bank') {
+          bankAccountsList = bankAccountsList.filter(a => a !== acc);
+          localStorage.setItem('biz_banks', JSON.stringify(bankAccountsList));
+        } else {
+          bettingAccountsList = bettingAccountsList.filter(a => a !== acc);
+          localStorage.setItem('biz_betting', JSON.stringify(bettingAccountsList));
+        }
+        allAccounts = [...bankAccountsList, ...bettingAccountsList];
+        updateAllCalculations();
+        renderQuickButtons();
+      }
+    }
+
+    function renderBalanceSheet() {
+      const data = calculateBalances();
+
+      document.getElementById('checkpoint-input').value = checkpointBalance;
+      document.getElementById('hero-actual-balance').innerText = formatLKR(data.actualNetBalance);
+      document.getElementById('banks-grand-total').innerText = formatLKR(data.banksTotal);
+      document.getElementById('betting-grand-total').innerText = formatLKR(data.bettingTotal);
+      document.getElementById('banks-count-label').innerText = `${data.bankAccs.length} Accounts`;
+      document.getElementById('betting-count-label').innerText = `${data.bettingAccs.length} Sites`;
+
+      document.getElementById('card-nayata-val').innerText = formatLKR(data.finalNayata);
+      document.getElementById('card-pdep-val').innerText = formatLKR(data.pendingDepositTotal);
+      document.getElementById('card-pwit-val').innerText = formatLKR(data.pendingWithdrawalTotal);
+      document.getElementById('manual-naya-input').value = manualBalances['mulu naya'] || '';
+
+      document.getElementById('banner-hand-on').innerText = formatLKR(data.actualNetBalance);
+      document.getElementById('banner-checkpoint').innerText = formatLKR(checkpointBalance);
+      const bVar = document.getElementById('banner-variance-val');
+      if (data.isVarianceBalanced) {
+        bVar.innerText = 'Balanced';
+        bVar.className = 'text-lg sm:text-xl font-extrabold text-emerald-400';
+      } else if (data.variance > 0) {
+        bVar.innerText = `+${formatLKR(data.variance)} (Surplus)`;
+        bVar.className = 'text-lg sm:text-xl font-extrabold text-cyan-400';
+      } else {
+        bVar.innerText = `${formatLKR(data.variance)} (Shortage)`;
+        bVar.className = 'text-lg sm:text-xl font-extrabold text-rose-400';
+      }
+
+      // Banks Cards - Added safe escaping so clicking cards with spaces/quotes works correctly
+      document.getElementById('banks-cards-grid').innerHTML = data.bankAccs.map(acc => {
+        const bal = data.accountTotals[acc] || 0;
+        const isPos = bal >= 0;
+        const manVal = manualBalances[acc] || '';
+        const safeAcc = acc.replace(/'/g, "\\'");
+        return `
+          <div onclick="openAccountDetails('${safeAcc}')" class="p-4 rounded-2xl bg-white shadow-sm hover:shadow-md border-t-4 ${isPos ? 'border-t-emerald-500' : 'border-t-rose-500'} border-x border-b border-indigo-50 cursor-pointer transition">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-xs font-bold text-slate-800 uppercase flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-extrabold">${acc.charAt(0).toUpperCase()}</span>
+                <span>${acc}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">View 🔍</span>
+                <button onclick="removeAccount('${safeAcc}', 'bank'); event.stopPropagation();" class="text-rose-400 hover:text-rose-600 ml-1"><i class="fa-solid fa-circle-xmark"></i></button>
+              </div>
+            </div>
+            <div class="text-xl font-extrabold my-2 ${isPos ? 'text-emerald-600' : 'text-rose-600'}">${formatLKR(bal)}</div>
+            <div class="mt-2 pt-2 border-t border-indigo-50" onclick="event.stopPropagation()">
+              <label class="block text-[9px] uppercase font-bold text-slate-400 mb-1">Start Baseline:</label>
+              <input type="number" step="any" value="${manVal}" placeholder="0.00" onchange="updateAccountManualBal('${safeAcc}', this.value)" class="w-full px-2 py-1 bg-indigo-50/50 border border-indigo-100 rounded text-xs font-medium focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Betting Cards - Added safe escaping so clicking cards with spaces/quotes works correctly
+      document.getElementById('betting-cards-grid').innerHTML = data.bettingAccs.map(acc => {
+        const bal = data.accountTotals[acc] || 0;
+        const isPos = bal >= 0;
+        const manVal = manualBalances[acc] || '';
+        const safeAcc = acc.replace(/'/g, "\\'");
+        return `
+          <div onclick="openAccountDetails('${safeAcc}')" class="p-4 rounded-2xl bg-white shadow-sm hover:shadow-md border-t-4 ${isPos ? 'border-t-purple-500' : 'border-t-rose-500'} border-x border-b border-indigo-50 cursor-pointer transition">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-xs font-bold text-slate-800 uppercase flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center text-[10px] font-extrabold">${acc.charAt(0).toUpperCase()}</span>
+                <span>${acc}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="text-[9px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">View 🔍</span>
+                <button onclick="removeAccount('${safeAcc}', 'betting'); event.stopPropagation();" class="text-rose-400 hover:text-rose-600 ml-1"><i class="fa-solid fa-circle-xmark"></i></button>
+              </div>
+            </div>
+            <div class="text-xl font-extrabold my-2 ${isPos ? 'text-purple-700' : 'text-rose-600'}">${formatLKR(bal)}</div>
+            <div class="mt-2 pt-2 border-t border-indigo-50" onclick="event.stopPropagation()">
+              <label class="block text-[9px] uppercase font-bold text-slate-400 mb-1">Start Baseline:</label>
+              <input type="number" step="any" value="${manVal}" placeholder="0.00" onchange="updateAccountManualBal('${safeAcc}', this.value)" class="w-full px-2 py-1 bg-indigo-50/50 border border-indigo-100 rounded text-xs font-medium focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openAccountDetails(accName) {
+      currentAccountModalTarget = accName;
+      const modal = document.getElementById('account-details-modal');
+      document.getElementById('account-modal-title').innerText = `${accName} - Transaction History`;
+
+      let totalAdded = 0;
+      let totalDeducted = 0;
+      const historyRows = [];
+
+      records.forEach(rec => {
+        const fromMatch = rec.from.toLowerCase().trim() === accName.toLowerCase().trim();
+        let deductedFromThis = 0;
+        rec.toArr.forEach(t => {
+          if (t.site.toLowerCase().trim() === accName.toLowerCase().trim()) {
+            deductedFromThis += (t.amount || 0);
+          }
+        });
+
+        if (rec.status === 'Yes') {
+          if (fromMatch) {
+            const addedAmt = rec.toArr.reduce((s, i) => s + (i.amount || 0), 0);
+            totalAdded += addedAmt;
+            historyRows.push({
+              date: rec.date, customer: rec.name,
+              detail: `Deposited into ${rec.toArr.map(t=>t.site).join(', ')}`,
+              impact: addedAmt, type: 'add', id: rec.id
+            });
+          }
+          if (deductedFromThis > 0) {
+            totalDeducted += deductedFromThis;
+            historyRows.push({
+              date: rec.date, customer: rec.name,
+              detail: `Funded from ${rec.from}`,
+              impact: deductedFromThis, type: 'deduct', id: rec.id
+            });
+          }
+        }
+      });
+
+      const baseline = parseFloat(manualBalances[accName.toLowerCase()]) || 0;
+      const net = baseline + totalAdded - totalDeducted;
+
+      document.getElementById('account-modal-added').innerText = `+${formatLKR(totalAdded)}`;
+      document.getElementById('account-modal-deducted').innerText = `-${formatLKR(totalDeducted)}`;
+      document.getElementById('account-modal-net').innerText = formatLKR(net);
+
+      const tbody = document.getElementById('account-modal-tbody');
+      if (historyRows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">No transactions recorded for this account yet.</td></tr>';
+      } else {
+        tbody.innerHTML = historyRows.map(row => `
+          <tr class="hover:bg-indigo-50/50">
+            <td class="p-2.5 text-slate-500 font-medium">${row.date}</td>
+            <td class="p-2.5 font-bold text-slate-800">${row.customer}<br><span class="text-[10px] text-slate-400 font-normal">${row.detail}</span></td>
+            <td class="p-2.5 font-extrabold ${row.type === 'add' ? 'text-emerald-600' : 'text-rose-600'}">
+              ${row.type === 'add' ? '+' : '-'}${formatLKR(row.impact)}
+            </td>
+            <td class="p-2.5 text-center whitespace-nowrap">
+              <button onclick="editRecord(${row.id})" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded text-[10px] font-bold cursor-pointer mr-1">
+                Edit
+              </button>
+              <button onclick="deleteRecordDirect(${row.id})" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-[10px] font-bold cursor-pointer">
+                Delete
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closeAccountModal() {
+      document.getElementById('account-details-modal').classList.add('hidden');
+    }
+
+    function deleteRecordDirect(id) {
+      if (confirm('Delete this transaction record?')) {
+        records = records.filter(r => r.id !== id);
+        localStorage.setItem('biz_records', JSON.stringify(records));
+        updateAllCalculations();
+        if (currentAccountModalTarget && !document.getElementById('account-details-modal').classList.contains('hidden')) {
+          openAccountDetails(currentAccountModalTarget);
+        }
+      }
+    }
+
+    function openVarianceModal() {
+      const data = calculateBalances();
+      document.getElementById('v-banks').innerText = `+${formatLKR(data.banksTotal)}`;
+      document.getElementById('v-betting').innerText = `+${formatLKR(data.bettingTotal)}`;
+      document.getElementById('v-naya').innerText = `+${formatLKR(data.finalNayata)}`;
+      document.getElementById('v-pdep').innerText = `-${formatLKR(data.pendingDepositTotal)}`;
+      document.getElementById('v-pwit').innerText = `-${formatLKR(data.pendingWithdrawalTotal)}`;
+      document.getElementById('v-hand-on').innerText = formatLKR(data.actualNetBalance);
+      document.getElementById('v-system-cash').innerText = formatLKR(checkpointBalance);
+
+      const rBox = document.getElementById('v-result-box');
+      if (data.isVarianceBalanced) {
+        rBox.className = 'p-3.5 rounded-xl font-extrabold text-center text-sm bg-emerald-100 text-emerald-800 border border-emerald-300';
+        rBox.innerText = 'PERFECT MATCH (Exact Reconciliation: Variance = 0.00 LKR)';
+      } else if (data.variance > 0) {
+        rBox.className = 'p-3.5 rounded-xl font-extrabold text-center text-sm bg-cyan-100 text-cyan-800 border border-cyan-300';
+        rBox.innerText = `CASH SURPLUS: +${formatLKR(data.variance)}`;
+      } else {
+        rBox.className = 'p-3.5 rounded-xl font-extrabold text-center text-sm bg-rose-100 text-rose-800 border border-rose-300';
+        rBox.innerText = `CASH SHORTAGE: ${formatLKR(data.variance)}`;
+      }
+      document.getElementById('variance-modal').classList.remove('hidden');
+    }
+
+    function closeVarianceModal() {
+      document.getElementById('variance-modal').classList.add('hidden');
+    }
+
+    function openStatusDetails(type) {
+      currentStatusModalType = type;
+      document.getElementById('status-modal-title').innerText = `${type} Records`;
+      const filtered = records.filter(r => r.status === type);
+      const tbody = document.getElementById('status-modal-tbody');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">No records found.</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(rec => {
+          const tot = rec.toArr.reduce((s, i) => s + (i.amount || 0), 0);
+          return `
+            <tr class="hover:bg-indigo-50/50">
+              <td class="p-2.5 text-slate-500">${rec.date}</td>
+              <td class="p-2.5 font-bold text-slate-800">${rec.name}<br><span class="text-[10px] text-slate-400 font-normal">${rec.from} → ${rec.toArr.map(t=>t.site).join(', ')}</span></td>
+              <td class="p-2.5 font-extrabold text-slate-900">${formatLKR(tot)}</td>
+              <td class="p-2.5 text-center">
+                <button onclick="markStatusAsYes(${rec.id})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] cursor-pointer">
+                  Mark YES
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+      document.getElementById('status-modal').classList.remove('hidden');
+    }
+
+    function closeStatusModal() {
+      document.getElementById('status-modal').classList.add('hidden');
+    }
+
+    function markStatusAsYes(id) {
+      const rec = records.find(r => r.id === id);
+      if (rec) {
+        rec.status = 'Yes';
+        localStorage.setItem('biz_records', JSON.stringify(records));
+        updateAllCalculations();
+        if (currentStatusModalType) openStatusDetails(currentStatusModalType);
+      }
+    }
+
+    function renderContacts() {
+      const q = (document.getElementById('contacts-search').value || '').toLowerCase().trim();
+      const tbody = document.getElementById('contacts-table-body');
+      const filtered = contacts.filter(c => 
+        c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q)) || (c.note && c.note.toLowerCase().includes(q))
+      );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">No contacts found.</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(c => `
+          <tr class="hover:bg-indigo-50/50">
+            <td class="p-3 font-bold text-slate-800 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-extrabold">${c.name.charAt(0).toUpperCase()}</span>
+              <span>${c.name}</span>
+            </td>
+            <td class="p-3 font-semibold text-slate-600">${c.phone || '-'}</td>
+            <td class="p-3 text-slate-500">${c.note || '-'}</td>
+            <td class="p-3 text-center whitespace-nowrap">
+              <button onclick="useContactInEntry('${c.name}', '${c.phone || ''}')" class="px-2 py-1 bg-cyan-50 text-cyan-700 rounded-lg font-bold text-[10px] hover:bg-cyan-100 cursor-pointer mr-1">
+                Use In Entry
+              </button>
+              <button onclick="editContact(${c.id})" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded text-[10px] font-bold cursor-pointer mr-1">
+                Edit
+              </button>
+              <button onclick="deleteContact(${c.id})" class="px-2 py-1 text-rose-500 hover:bg-rose-50 rounded text-[10px] font-bold cursor-pointer">
+                Delete
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+      document.getElementById('nav-contacts-count').innerText = contacts.length;
+    }
+
+    function useContactInEntry(name, phone) {
+      const full = phone ? `${name} (${phone})` : name;
+      document.getElementById('entry-name').value = full;
+      switchView('entry-view');
+    }
+
+    function openAddContactModal() {
+      editingContactId = null;
+      document.getElementById('contact-modal-title').innerText = "Add New Contact";
+      document.getElementById('new-contact-name').value = '';
+      document.getElementById('new-contact-phone').value = '';
+      document.getElementById('new-contact-note').value = '';
+      document.getElementById('add-contact-modal').classList.remove('hidden');
+    }
+
+    function editContact(id) {
+      const c = contacts.find(c => c.id === id);
+      if(!c) return;
+      editingContactId = id;
+      document.getElementById('contact-modal-title').innerText = "Edit Contact";
+      document.getElementById('new-contact-name').value = c.name;
+      document.getElementById('new-contact-phone').value = c.phone || '';
+      document.getElementById('new-contact-note').value = c.note || '';
+      document.getElementById('add-contact-modal').classList.remove('hidden');
+    }
+
+    function closeAddContactModal() {
+      editingContactId = null;
+      document.getElementById('add-contact-modal').classList.add('hidden');
+    }
+
+    function handleSaveContact(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-contact-name').value.trim();
+      const phone = document.getElementById('new-contact-phone').value.trim();
+      const note = document.getElementById('new-contact-note').value.trim();
+      if (!name) return;
+
+      if(editingContactId) {
+        const index = contacts.findIndex(c => c.id === editingContactId);
+        if(index > -1) {
+          contacts[index].name = name;
+          contacts[index].phone = phone;
+          contacts[index].note = note;
+        }
+      } else {
+        contacts.unshift({
+          id: Date.now(), name, phone, note,
+          createdAt: new Date().toISOString().split('T')[0]
+        });
+      }
+      
+      localStorage.setItem('biz_contacts', JSON.stringify(contacts));
+      closeAddContactModal();
+      renderContacts();
+    }
+
+    function deleteContact(id) {
+      if (confirm('Delete this contact?')) {
+        contacts = contacts.filter(c => c.id !== id);
+        localStorage.setItem('biz_contacts', JSON.stringify(contacts));
+        renderContacts();
+      }
+    }
+
+    function renderDatabase() {
+      const q = (document.getElementById('db-search').value || '').toLowerCase().trim();
+      const st = document.getElementById('db-filter-status').value;
+      const tbody = document.getElementById('database-table-body');
+
+      const filtered = [...records].reverse().filter(r => {
+        if (st !== 'ALL' && r.status !== st) return false;
+        if (!q) return true;
+        const haystack = `${r.name} ${r.from} ${r.toArr.map(t=>t.site).join(' ')} ${r.note || ''} ${r.status}`.toLowerCase();
+        return haystack.includes(q);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-400">No matching database records found.</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(rec => {
+          const toSites = rec.toArr.map(t => t.site).join('<br>');
+          const toAmts = rec.toArr.map(t => formatLKR(t.amount)).join('<br>');
+          let badgeColor = 'bg-emerald-100 text-emerald-800';
+          if (rec.status === 'Nayata') badgeColor = 'bg-rose-100 text-rose-800';
+          if (rec.status === 'Pending Deposit') badgeColor = 'bg-amber-100 text-amber-800';
+          if (rec.status === 'Pending Withdrawal') badgeColor = 'bg-orange-100 text-orange-800';
+
+          return `
+            <tr class="hover:bg-indigo-50/50">
+              <td class="p-3 text-slate-500 font-medium whitespace-nowrap">${rec.date}</td>
+              <td class="p-3 font-bold text-slate-800">${rec.name}<br><span class="text-[9px] uppercase font-extrabold text-blue-600">[${rec.mode}]</span></td>
+              <td class="p-3 font-bold text-emerald-700">${rec.from}</td>
+              <td class="p-3 text-rose-700 font-bold">${toSites}</td>
+              <td class="p-3 font-extrabold text-slate-900">${toAmts}</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-full font-bold text-[10px] ${badgeColor}">${rec.status}</span></td>
+              <td class="p-3 text-slate-500 max-w-xs truncate">${rec.note || '-'}</td>
+              <td class="p-3 text-center whitespace-nowrap">
+                ${rec.status !== 'Yes' ? `<button onclick="markStatusAsYes(${rec.id})" class="px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-[10px] font-bold hover:bg-emerald-100 cursor-pointer mr-1">YES</button>` : ''}
+                <button onclick="editRecord(${rec.id})" class="p-1.5 text-blue-500 hover:text-blue-700 cursor-pointer bg-blue-50 hover:bg-blue-100 rounded mr-1"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="deleteRecordDirect(${rec.id})" class="p-1.5 text-rose-500 hover:text-rose-700 cursor-pointer bg-rose-50 hover:bg-rose-100 rounded"><i class="fa-solid fa-trash-can"></i></button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+      document.getElementById('nav-records-count').innerText = records.length;
+    }
+
+    function exportCSV() {
+      if (records.length === 0) { alert('No records to export'); return; }
+      const headers = ['ID,Date,Mode,Customer,From,To,Amounts,Status,Note'];
+      const rows = records.map(r => 
+        `"${r.id}","${r.date}","${r.mode}","${r.name.replace(/"/g, '""')}","${r.from}","${r.toArr.map(t=>t.site).join('; ')}","${r.toArr.map(t=>t.amount).join('; ')}","${r.status}","${(r.note||'').replace(/"/g, '""')}"`
+      );
+      const blob = new Blob([headers.concat(rows).join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `ledger_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function updateAccountManualBal(acc, val) {
+      manualBalances[acc.toLowerCase()] = val;
+      localStorage.setItem('biz_manual_bal', JSON.stringify(manualBalances));
+      updateAllCalculations();
+    }
+
+    function updateManualNaya(val) {
+      manualBalances['mulu naya'] = val;
+      localStorage.setItem('biz_manual_bal', JSON.stringify(manualBalances));
+      updateAllCalculations();
+    }
+
+    function saveCheckpoint() {
+      const val = parseFloat(document.getElementById('checkpoint-input').value) || 0;
+      checkpointBalance = val;
+      localStorage.setItem('biz_checkpoint_bal', val.toString());
+      alert('Manual System Cash Checkpoint Updated!');
+      updateAllCalculations();
+    }
+
+    function resetData() {
+      if (confirm('Reset ledger and balance sheet back to demo sample records?')) {
+        records = SAMPLE_RECORDS;
+        contacts = SAMPLE_CONTACTS;
+        manualBalances = SAMPLE_BALANCES;
+        checkpointBalance = 915000;
+        bankAccountsList = ['sampath', 'peoples', 'lolc', 'lb', 'ez cash', 'dialog', 'cash', 'commercial'];
+        bettingAccountsList = ['1xbet', '888', 'db bet', 'melbet', 'web', 'megapari', 'bet365'];
+        allAccounts = [...bankAccountsList, ...bettingAccountsList];
+
+        localStorage.setItem('biz_records', JSON.stringify(records));
+        localStorage.setItem('biz_contacts', JSON.stringify(contacts));
+        localStorage.setItem('biz_manual_bal', JSON.stringify(manualBalances));
+        localStorage.setItem('biz_checkpoint_bal', checkpointBalance.toString());
+        localStorage.setItem('biz_banks', JSON.stringify(bankAccountsList));
+        localStorage.setItem('biz_betting', JSON.stringify(bettingAccountsList));
+
+        updateAllCalculations();
+        renderQuickButtons();
+        alert('Reset Complete!');
+      }
+    }
+
+    function updateAllCalculations() {
+      const data = calculateBalances();
+      const vBadge = document.getElementById('nav-variance-badge');
+      if (data.isVarianceBalanced) {
+        vBadge.innerText = 'Balanced';
+        vBadge.className = 'font-semibold text-emerald-400';
+      } else if (data.variance > 0) {
+        vBadge.innerText = `+${formatLKR(data.variance)}`;
+        vBadge.className = 'font-semibold text-cyan-400';
+      } else {
+        vBadge.innerText = formatLKR(data.variance);
+        vBadge.className = 'font-semibold text-rose-400';
+      }
+
+      document.getElementById('nav-records-count').innerText = records.length;
+      document.getElementById('nav-contacts-count').innerText = contacts.length;
+
+      renderBalanceSheet();
+      renderDatabase();
+      renderContacts();
+    }
+
+    function initApp() {
+      if (currentUser) {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('nav-user-name').innerText = currentUser;
+        renderQuickButtons();
+        updateAllCalculations();
+      } else {
+        document.getElementById('login-view').classList.remove('hidden');
+        document.getElementById('app-container').classList.add('hidden');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+
+  <!-- FIREBASE INITIALIZATION -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtbcTKKyTFp9EKIu6brtZRit-0tuGeUq0",
+      authDomain: "basinasdana.firebaseapp.com",
+      projectId: "basinasdana",
+      storageBucket: "basinasdana.firebasestorage.app",
+      messagingSenderId: "366740634554",
+      appId: "1:366740634554:web:f972f6a9b8e91cecb73b83",
+      measurementId: "G-F0ZDRL1BW7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+</body>
+</html>
